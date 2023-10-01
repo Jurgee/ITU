@@ -1,0 +1,4 @@
+﻿  main.c
+C:\School\FIT\2BIT\Zimni\ITU\2.cviko\WinAPI\main.c(268,8): error C2374: 'pen2': redefinition; multiple initialization
+C:\School\FIT\2BIT\Zimni\ITU\2.cviko\WinAPI\main.c(203): message : see declaration of 'pen2'
+C:\School\FIT\2BIT\Zimni\ITU\2.cviko\WinAPI\main.c(312,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
