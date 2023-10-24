@@ -1,124 +1,122 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
 <html>
+
 <head>
-  <title> ITU ajax </title>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2" />
-  <style type="text/css">
-  div, input { margin: 10px; }
-  </style>
+    <title> ITU ajax </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2" />
+    <style type="text/css">
+        div,
+        input {
+            margin: 10px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="chatArea" style="height: 300px; border: solid #aaa 1px; overflow:auto;"></div> 
+    <div id="chatArea" style="height: 300px; border: solid #aaa 1px; overflow:auto;"></div>
 
-<form onsubmit="return uploadData()">
-  <input type="text" id="newMessageString">
-  <input type="submit" value="send">
-</form>
+    <form onsubmit="return uploadData()">
+        <input type="text" id="newMessageString">
+        <input type="submit" value="send">
+    </form>
 
-<div id="status" style="border: solid #aaa 1px; ">&nbsp;</div> 
+    <div id="status" style="border: solid #aaa 1px; ">&nbsp;</div>
 
 
-<script type="text/javascript">
-var id = 0;
-/***
-  * XMLHttpRequest object constructor (for compatibility with various browsers)
-  */
-function createXmlHttpRequestObject() 
-{
-    var request;
-  
-    try
-    {
-        request = new XMLHttpRequest(); // should work on all browsers except IE6 or older
-    } 
-    catch (e) 
-    { 
-        try 
-        {
-            request = new ActiveXObject("Microsoft.XMLHttp"); // browser is IE6 or older
+    <script type="text/javascript">
+        var id = 0;
+
+        /***
+          * XMLHttpRequest object constructor (for compatibility with various browsers)
+          */
+        function createXmlHttpRequestObject() {
+            var request;
+
+            try {
+                request = new XMLHttpRequest(); // should work on all browsers except IE6 or older
+            }
+            catch (e) {
+                try {
+                    request = new ActiveXObject("Microsoft.XMLHttp"); // browser is IE6 or older
+                }
+                catch (e) {
+                    // ignore error
+                }
+            }
+
+            if (!request) {
+                alert("Error creating the XMLHttpRequest object.");
+            }
+            else {
+                return request;
+            }
         }
-        catch (e) 
-        {
-            // ignore error
+
+        function uploadData() {
+            document.getElementById("status").innerHTML = "uploadData";
+
+            try {
+                var request = createXmlHttpRequestObject(); // stores XMLHttpRequestObject
+                //// put your code here
+                request.open("POST", "https://pckiss.fit.vutbr.cz/itu/api.php", true);
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                request.send("user=Jurge&data=" + document.getElementById("newMessageString").value);
+            }
+            catch (e) {
+                alert(e.toString());
+            }
+            request.onreadystatechange = function () {
+                if ((request.readyState == 4) && (request.status == 200)) {
+                    downloadData();
+                }
+            }
+            return false; // to avoid default form submit behavior 
         }
-    }
-  
-    if (!request) 
-    {
-        alert("Error creating the XMLHttpRequest object.");
-    } 
-    else 
-    {
-        return request;
-    }
-}
 
-function uploadData()
-{
-    document.getElementById("status").innerHTML = "uploadData()";
+        function downloadData() {
+            document.getElementById("status").innerHTML = "downloadData";
 
-    try 
-    {
-        var request = createXmlHttpRequestObject(); // stores XMLHttpRequestObject
+            //// put your code here
+            var request = createXmlHttpRequestObject();
+            request.open("GET", "https://pckiss.fit.vutbr.cz/itu/api.php", true);
+            request.onreadystatechange = function () {
+                if ((request.readyState == 4) && (request.status == 200)) {
+                    var parsedResponse = JSON.parse(request.responseText);
+                    parsedResponse.forEach(msg => {
+                        if (id < msg.id) {
+                            msgText = '[' + msg.dts + '] &lt;' + msg.login + '&gt;\t ' + msg.cnt + '<br>';
+                            document.getElementById("chatArea").innerHTML += msgText;
+                            id = msg.id;
+                        }
+                    })
+                }
+            }
+            var element = document.getElementById("chatArea");
+            element.scrollTop = element.scrollHeight;
+            request.send(null);
+        }
+
         //// put your code here
-        var request = createXmlHttpRequestObject();
-        request.open("POST", "http://pckiss.fit.vutbr.cz/itu/api.php", true);
-    
-        request.send("data=" + document.getElementById("newMessageString").value);
-    } 
-    catch (e) 
-    {
-        alert(e.toString());
-    }
 
-    return false; // to avoid default form submit behavior 
-}
+        function send() {
+            var request = createXmlHttpRequestObject();
+            request.open("POST", "https://pckiss.fit.vutbr.cz/itu/api.php", true);
+            request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.onreadystatechange = function () {
+                if ((request.readyState == 4) && (request.status == 200)) {
+                    alert(request.responseText);
+                    alert(request.responseXML);
+                }
+            }
+            request.send(null)
+        }
 
-function downloadData() 
-{
-    document.getElementById("status").innerHTML = "downloadData()";
+        downloadData();
+        setInterval(downloadData, 3000);
 
-    //// put your code here
-    var request = createXmlHttpRequestObject();
-    request.open("GET", "http://pckiss.fit.vutbr.cz/itu/api.php", true);
-    request.onreadystatechange = function()
-    {
-	if((request.readyState == 4 ) && (request.status == 200 ))
-	{
-	var pole = JSON.parse(request.responseText);
-	pole.forEach(msg =>
-	{
-	if(id < msg.id){
-	document.getElementById("chatArea").innerHTML += msg.login + " - " + msg.dts + " : " + msg.cnt + "<br>";
-	id = msg.id;
-    	}
-	}
-
-	)
-	}
-    }
-    request.send(null);
-}
-
-//// put your code here
-function send()
-{
-    var request = createXmlHttpRequestObject();
-    request.open("POST","http://pckiss.fit.vutbr.cz/itu/api.php",true);
-    request.onreadystatechange = function()
-    {
-	if((request.readyState == 4) && (request.status == 200))
-	{
-		alert(request.responseText);
-		alert(request.responseXML);
-	}    
-    }
-    request.send(null);
-}
-downloadData();
-setInterval(downloadData,3000);
-</script>
+    </script>
 </body>
+
 </html>
